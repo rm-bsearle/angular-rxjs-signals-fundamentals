@@ -19,7 +19,6 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   private productService = inject(ProductService);
 
-
   // Products
   products: Product[] = [];
 
