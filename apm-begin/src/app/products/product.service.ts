@@ -9,7 +9,7 @@ import { HttpErrorService } from '../utilities/http-error.service';
   providedIn: 'root'
 })
 export class ProductService {
-  private productsUrl = 'api/productss';
+  private productsUrl = 'api/products';
 
   private http = inject(HttpClient);
   private errorService = inject(HttpErrorService);
@@ -27,6 +27,7 @@ export class ProductService {
     return this.http.get<Product>(productUrl)
       .pipe(
         tap(() => console.log('in http.get product pipeline')),
+        catchError(err => this.handleError(err)),
       )
   }
 
