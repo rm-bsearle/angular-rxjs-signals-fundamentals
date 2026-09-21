@@ -19,6 +19,7 @@ export class ProductService {
   readonly products$ = this.http.get<Product[]>(this.productsUrl)
       .pipe(
         tap(p => console.log(JSON.stringify(p))),
+        shareReplay(1),
         catchError(err => this.handleError(err)),
       );
 
