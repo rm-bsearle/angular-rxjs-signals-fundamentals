@@ -26,7 +26,7 @@ export class ProductListComponent {
     );
 
   // Selected product id to highlight the entry
-  selectedProductId: number = 0;
+  selectedProductId$ = this.productService.productSelected$;
 
   onSelected(productId: number): void {
     this.productService.productSelected(productId);
