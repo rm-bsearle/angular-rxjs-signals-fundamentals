@@ -26,16 +26,6 @@ export class ProductService {
   private readonly productSelectedSubject = new BehaviorSubject<number | undefined>(undefined);
   readonly productSelected$ = this.productSelectedSubject.asObservable();
 
-  getProduct(id: number): Observable<Product> {
-    const productUrl = `${this.productsUrl}/${id}`;
-    return this.http.get<Product>(productUrl)
-      .pipe(
-        tap(() => console.log('in http.get product pipeline')),
-        switchMap(product => this.getProductWithReviews(product)),
-        catchError(err => this.handleError(err)),
-      )
-  }
-
   readonly product$ = this.productSelected$.pipe(
     filter(Boolean),
     switchMap(id => {
