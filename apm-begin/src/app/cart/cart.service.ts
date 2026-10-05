@@ -27,4 +27,18 @@ export class CartService {
   addToCart(product: Product) {
     this.cartItems.update(items => [...items, {product, quantity: 1}])
   }
+
+  removeFromCart(cartItem: CartItem): void {
+    this.cartItems.update(c => c.filter(item => item.product.id != cartItem.product.id));
+  }
+
+  updateQuantity(cartItem: CartItem, quantity: number): void {
+    this.cartItems.update(items =>
+      items.map( item =>
+        item.product.id === cartItem.product.id
+          ? {...item, quantity}
+          : item
+      )
+    )
+  }
 }
