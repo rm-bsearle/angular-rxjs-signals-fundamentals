@@ -25,7 +25,13 @@ export class CartService {
   eLength = effect(() => {console.log('Cart array length:', this.cartItems().length)})
 
   addToCart(product: Product) {
-    this.cartItems.update(items => [...items, {product, quantity: 1}])
+    const existingCartItem = this.cartItems().find(i => i.product.id == product.id);
+    if (existingCartItem !== undefined) {
+      this.updateQuantity(existingCartItem, existingCartItem.quantity + 1);
+    }
+    else {
+      this.cartItems.update(items => [...items, {product, quantity: 1}])
+    }
   }
 
   removeFromCart(cartItem: CartItem): void {
