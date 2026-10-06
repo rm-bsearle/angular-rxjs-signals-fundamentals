@@ -5,6 +5,8 @@ import { Product } from './product';
 import { HttpErrorService } from '../utilities/http-error.service';
 import { Review } from '../reviews/review';
 import { ReviewService } from '../reviews/review.service';
+import { toSignal } from '@angular/core/rxjs-interop'
+
 
 @Injectable({
   providedIn: 'root'
@@ -16,12 +18,13 @@ export class ProductService {
   private errorService = inject(HttpErrorService);
   private reviewService = inject(ReviewService);
 
-  readonly products$ = this.http.get<Product[]>(this.productsUrl)
+  private products$ = this.http.get<Product[]>(this.productsUrl)
       .pipe(
         tap(p => console.log(JSON.stringify(p))),
         shareReplay(1),
         catchError(err => this.handleError(err)),
       );
+  products = toSignal(this.products$, { initialValue: [] as Product[] });
 
   private readonly productSelectedSubject = new BehaviorSubject<number | undefined>(undefined);
   readonly productSelected$ = this.productSelectedSubject.asObservable();
