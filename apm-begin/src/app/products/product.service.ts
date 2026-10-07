@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, combineLatest, filter, map, Observable, of, shareReplay, switchMap, tap, throwError } from 'rxjs';
-import { Product } from './product';
+import { Product, Result } from './product';
 import { HttpErrorService } from '../utilities/http-error.service';
 import { Review } from '../reviews/review';
 import { ReviewService } from '../reviews/review.service';
@@ -12,26 +12,27 @@ import { toSignal } from '@angular/core/rxjs-interop'
   providedIn: 'root'
 })
 export class ProductService {
-  private productsUrl = 'api/productss';
+  private productsUrl = 'api/products';
 
   private http = inject(HttpClient);
   private errorService = inject(HttpErrorService);
   private reviewService = inject(ReviewService);
 
-  private products$ = this.http.get<Product[]>(this.productsUrl)
+  private productsResult$ = this.http.get<Product[]>(this.productsUrl)
       .pipe(
+        map(p => ({data: p} as Result<Product[]>)),
         tap(p => console.log(JSON.stringify(p))),
         shareReplay(1),
-        catchError(err => this.handleError(err)),
+        catchError(err =>of({
+          data: [],
+          error: this.errorService.formatError(err)
+        } as Result<Product[]>)),
       );
-  // products = toSignal(this.products$, { initialValue: [] as Product[] });
-  products = computed(() => {
-    try {
-      return toSignal(this.products$, { initialValue: [] as Product[] })();
-    } catch (error) {
-      return [] as Product[]
-    }
-  })
+  private productsResult = toSignal(this.productsResult$,
+    { initialValue: ({ data: [] } as Result<Product[]>) });
+
+  products = computed(() => this.productsResult().data)
+  productsError = computed(() => this.productsResult().error)
 
   private readonly productSelectedSubject = new BehaviorSubject<number | undefined>(undefined);
   readonly productSelected$ = this.productSelectedSubject.asObservable();
