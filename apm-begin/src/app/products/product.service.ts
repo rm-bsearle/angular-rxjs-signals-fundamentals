@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { computed, inject, Injectable } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { BehaviorSubject, catchError, combineLatest, filter, map, Observable, of, shareReplay, switchMap, tap, throwError } from 'rxjs';
 import { Product, Result } from './product';
 import { HttpErrorService } from '../utilities/http-error.service';
@@ -36,6 +36,7 @@ export class ProductService {
 
   private readonly productSelectedSubject = new BehaviorSubject<number | undefined>(undefined);
   readonly productSelected$ = this.productSelectedSubject.asObservable();
+  selectedProductId = signal<number | undefined>(undefined);
 
   readonly product$ = this.productSelected$.pipe(
     filter(Boolean),
@@ -72,6 +73,7 @@ export class ProductService {
 
   productSelected(selectedProductId: number): void {
     this.productSelectedSubject.next(selectedProductId);
+    this.selectedProductId.set(selectedProductId);
   }
 
   handleError(err: HttpErrorResponse): Observable<never> {
