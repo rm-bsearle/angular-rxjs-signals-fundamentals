@@ -36,7 +36,7 @@ export class ProductService {
 
   selectedProductId = signal<number | undefined>(undefined);
 
-  private productResult$ = toObservable(this.selectedProductId).pipe(
+  private productResult1$ = toObservable(this.selectedProductId).pipe(
     filter(Boolean),
     switchMap(id => {
       const productUrl = `${this.productsUrl}/${id}`;
@@ -51,9 +51,6 @@ export class ProductService {
     }),
     map( p => ({data: p} as Result<Product>))
   );
-  private productResult = toSignal(this.productResult$);
-  product = computed(() => this.productResult()?.data);
-  productError = computed(() => this.productResult()?.error);
 
   // readonly product$ = combineLatest([
   //   this.productSelected$,
@@ -64,6 +61,30 @@ export class ProductService {
   //     switchMap(product => this.getProductWithReviews(product)),
   //     catchError(err => this.handleError(err)),
   //   );
+
+  private foundProduct = computed(() => {
+    const products = this.products();
+    const selectedProductId = this.selectedProductId();
+    if (products && selectedProductId) {
+      return products?.find(p =>p.id === selectedProductId);
+    }
+    return undefined;
+  })
+
+  private productResult$ = toObservable(this.foundProduct)
+    .pipe(
+      filter(Boolean),
+      switchMap(product => this.getProductWithReviews(product)),
+      map(p => ({data: p} as Result<Product>)),
+      catchError(err => of({
+        data: undefined,
+        error: this.errorService.formatError(err)
+      } as Result<Product>)),
+    );
+  private productResult = toSignal(this.productResult$);
+  product = computed(() => this.productResult()?.data);
+  productError = computed(() => this.productResult()?.error);
+
 
   getProductWithReviews(product: Product): Observable<Product> {
     if(product.hasReviews) {
