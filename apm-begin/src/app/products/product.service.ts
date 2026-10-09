@@ -5,7 +5,7 @@ import { Product, Result } from './product';
 import { HttpErrorService } from '../utilities/http-error.service';
 import { Review } from '../reviews/review';
 import { ReviewService } from '../reviews/review.service';
-import { toSignal } from '@angular/core/rxjs-interop'
+import { toObservable, toSignal } from '@angular/core/rxjs-interop'
 
 
 @Injectable({
@@ -34,11 +34,9 @@ export class ProductService {
   products = computed(() => this.productsResult().data)
   productsError = computed(() => this.productsResult().error)
 
-  private readonly productSelectedSubject = new BehaviorSubject<number | undefined>(undefined);
-  readonly productSelected$ = this.productSelectedSubject.asObservable();
   selectedProductId = signal<number | undefined>(undefined);
 
-  readonly product$ = this.productSelected$.pipe(
+  readonly product$ = toObservable(this.selectedProductId).pipe(
     filter(Boolean),
     switchMap(id => {
       const productUrl = `${this.productsUrl}/${id}`;
@@ -72,7 +70,6 @@ export class ProductService {
   }
 
   productSelected(selectedProductId: number): void {
-    this.productSelectedSubject.next(selectedProductId);
     this.selectedProductId.set(selectedProductId);
   }
 
